@@ -1,0 +1,184 @@
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+
+import 'catalogue_gallery.dart';
+
+class Catelogue extends StatefulWidget {
+  const Catelogue({Key? key}) : super(key: key);
+
+  @override
+  State<Catelogue> createState() => _CatelogueState();
+}
+
+class _CatelogueState extends State<Catelogue> {
+
+  late File imageFile;
+  File? _proImage;
+  List<TextEditingController> _controllers = [];
+  List<TextField> _fields = [];
+
+  @override
+  void dispose() {
+    for (final controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    MediaQuery.of(context).size.height;
+    MediaQuery.of(context).size.width;
+    return SafeArea(
+      child: Scaffold(
+          backgroundColor: Color(0xffE9FEF8),
+          resizeToAvoidBottomInset: false,
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Boxcontainer(),
+                Type(ltext: "Item Name"),
+                Type(ltext: "Price"),
+                Type(ltext: "Description"),
+                Type(ltext: "Product Details"),
+                _listView(),
+                _addTile(),
+                SaveButton(),
+              ],
+            ),
+          )
+      ),
+    );
+  }
+
+  Widget Boxcontainer() {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.only(top: 20),
+        child: InkWell(
+          onTap: () {
+            proPickImage();
+          },
+          child: Container(
+            height: MediaQuery.of(context).size.height * .27,
+            width: MediaQuery.of(context).size.width * .91,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Color(0xffd9d9d9),
+            ),
+            child: _proImage != null ? Image(image: FileImage(_proImage!),
+              fit: BoxFit.cover,)
+                : Icon(Icons.add_a_photo, color: Colors.black, size: 50,),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _listView() {
+    return ListView.builder(
+      shrinkWrap: true,
+      itemCount: _fields.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(left: 30,top: 10,right: 50,bottom: 10),
+          child: TextField(
+            controller: _controllers[index],
+            decoration: InputDecoration(
+                labelText: "Products Details${index + 1}",
+                labelStyle: TextStyle(fontWeight: FontWeight.w600,
+                    fontSize: 14, color: Colors.black)
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _addTile() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 380,),
+      child: Container(
+        decoration: BoxDecoration(
+            color: Colors.grey.shade400,
+            shape: BoxShape.circle
+        ),
+        child: ListTile(
+          title: Icon(Icons.add, size: 30, color: Colors.black),
+          onTap: () {
+            final controller = TextEditingController();
+            final field = TextField(
+              controller: controller,
+              decoration: InputDecoration(
+                hintText: "Products Details${_controllers.length + 1}",
+                hintStyle: TextStyle(fontWeight: FontWeight.w600,
+                    fontSize: 14, color: Colors.black),
+              ),
+            );
+            setState(() {
+              _controllers.add(controller);
+              _fields.add(field);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Future proPickImage() async {
+    try {
+      final proImage = await ImagePicker()
+          .pickImage(source: ImageSource.gallery, imageQuality: 60);
+      if (proImage == null) {
+        return;
+      }
+      final imageTemporary = File(proImage.path);
+      setState(() => _proImage = imageTemporary);
+    } on PlatformException {
+      return "Failed to Pick";
+    }
+  }
+  Widget SaveButton(){
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 100),
+      child: Container(
+        height: 40,
+        width: 200,
+        child: ElevatedButton(
+            onPressed: (){
+               // Navigator.push(context,
+               //   MaterialPageRoute(builder: (context)=>CatalogueGallery()));
+            },
+            style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 10,
+                backgroundColor: Color(0xffd9d9d9)
+            ),
+            child: Text("Save",style: TextStyle(fontWeight: FontWeight.bold,
+                fontSize: 18,color: Colors.black),)),
+      ),
+    );
+  }
+}
+
+class Type extends StatelessWidget {
+  final String ltext;
+  const Type({Key? key,required this.ltext}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 30,right: 50,top: 20),
+      child: TextField(
+        decoration: InputDecoration(
+            border: UnderlineInputBorder(),
+            labelText: ltext,
+            labelStyle: TextStyle(fontSize: 14,
+                fontWeight: FontWeight.w600,color: Colors.black)
+        ),
+      ),
+    );
+  }
+}
